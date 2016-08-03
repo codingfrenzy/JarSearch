@@ -1,4 +1,4 @@
-import org.apache.commons.cli.*;
+//import org.apache.commons.cli.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,9 +16,7 @@ public class JarSearch {
 
     private int execType;
 
-    int numPackages = 0;
     static String util = "earjarsearch";
-    static Options options;
     static boolean progressBar = false;
 
     public JarSearch() {
@@ -233,7 +231,7 @@ public class JarSearch {
     }
 
     public static void displayVersion() {
-        System.out.println(util + " version: 1.0");
+        System.out.println(util + " version: 1.1");
     }
 
     public static void displayHelp() {
@@ -246,10 +244,6 @@ public class JarSearch {
                 util + " -aj umsservice \tDisplays all ears that contains any jar with 'omsservice' in its name. Includes APP-INF jars.\n\n" +
                 util + " -e umsservice.ear => Displays all jars+classes in given ear.\n"
         );
-//        HelpFormatter formatter = new HelpFormatter();
-//        formatter.printHelp("Options: \n", options);
-
-
     }
 
     public static void abort() {
@@ -273,28 +267,14 @@ public class JarSearch {
 
     public static void main(String[] args) {
 
-        options = new Options();
-        options.addOption("c", true, "(class) the class name to search for in the packages");
-        options.addOption("a", false, "(appinf) when searching, includes jars in APP-INF folder");
-        options.addOption("j", true, "(jar) the jar name to search for in the ears");
-        options.addOption("e", true, "(ear) Expand an ear and show the jars + classes.");
-        options.addOption("h", false, "(help) displays this help message");
-        options.addOption("p", false, "(progress) displays the progress bar");
-        options.addOption("v", false, "(version) displays the version number");
-
-//        TreeMap<String, String> options = new TreeMap<String, String>();
-//        options.put("c", "(class) the class name to search for in the packages");
-//        options.put("a", "(appinf) when searching, includes jars in APP-INF folder");
-//        options.put("j", "(jar) the jar name to search for in the ears");
-//        options.put("e", "(ear) Expand an ear and show the jars + classes.");
-//        options.put("h", "(help) displays this help message");
-//        options.put("p", "(progress) displays the progress bar");
-//        options.put("v", "(version) displays the version number");
-
-        if (args[0].indexOf('-') == -1) {
-            System.out.println("ERROR. Requires argument. Try help: earjarsearch -h");
-            System.exit(0);
-        }
+        TreeMap<Character, String> options = new TreeMap<Character, String>();
+        options.put('a', "(appinf) when searching, includes jars in APP-INF folder");
+        options.put('c', "(class) the class name to search for in the packages");
+        options.put('e', "(ear) Expand an ear and show the jars + classes.");
+        options.put('h', "(help) displays this help message");
+        options.put('j', "(jar) the jar name to search for in the ears");
+        options.put('p', "(progress) displays the progress bar");
+        options.put('v', "(version) displays the version number");
 
         /*
         c
@@ -304,40 +284,56 @@ public class JarSearch {
         aj
         ae
          */
+        boolean appinf = false,
+                classOpt = false,
+                earOpt = false,
+                help = false,
+                jarOpt = false,
+                progress = false,
+                version = false;
+        String classname = "",
+                earname = "",
+                jarname = "";
 
-        if (args[0].indexOf('h') >= 0) {
-            displayHelp();
+        if (args[0].indexOf('-') == -1) {
+            System.out.println("ERROR. Requires argument. Try help: earjarsearch -h");
             System.exit(0);
         }
 
-        if (args[0].indexOf('v') >= 0) {
-            displayVersion();
+        if (args.length > 2) {
+            System.out.println("ERROR. Invalid number of arguments. Try help: earjarsearch -h");
             System.exit(0);
         }
 
-//        CommandLineParser parser = new DefaultParser();
-//        try {
-//            CommandLine cmd = parser.parse(options, args);
-//        } catch (ParseException e) {
-//            System.out.println(e.getMessage());
-//        }
-
-        boolean classOpt = false, earOpt = false, jarOpt = false, appinf = false;
-
-        if (args[0].indexOf('c') >= 0) {
-            classOpt = true;
-        }
-
-        if (args[0].indexOf('j') >= 0) {
-            jarOpt = true;
-        }
-
-        if (args[0].indexOf('e') >= 0) {
-            earOpt = true;
-        }
-
-        if (args[0].indexOf('a') >= 0) {
-            appinf = true;
+        for (char opt : args[0].toCharArray()) {
+            switch (opt) {
+                case '-':
+                    break;
+                case 'a':
+                    appinf = true;
+                    break;
+                case 'c':
+                    classOpt = true;
+                    break;
+                case 'e':
+                    earOpt = true;
+                    break;
+                case 'h':
+                    displayHelp();
+                    return;
+                case 'j':
+                    jarOpt = true;
+                    break;
+                case 'p':
+                    progress = true;
+                    break;
+                case 'v':
+                    displayVersion();
+                    return;
+                default:
+                    System.out.println("ERROR. Invalid argument. Try help: earjarsearch -h");
+                    return;
+            }
         }
 
         if ((classOpt && earOpt) || (jarOpt && earOpt) || (classOpt && jarOpt)) {
@@ -345,141 +341,119 @@ public class JarSearch {
             System.exit(0);
         }
 
-        CommandLineParser parser = new DefaultParser();
-        try {
-            CommandLine cmd = parser.parse(options, args);
+        if (args.length < 2) {
+            System.out.println("ERROR. One of the option requires an argument. Try help: earjarsearch -h");
+            return;
+        }
+        String argument = args[1].toLowerCase();
 
-            if (cmd.hasOption("p") || cmd.hasOption("progress")) {
-                progressBar = true;
-                System.out.println(progressBar);
-            }
-            String classname = "";
-            String earname = "";
-            String jarname = "";
+        if (progress) {
+            progressBar = true;
+//            System.out.println(progressBar);
+        }
 
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        String op;
+        List<String> packages = new ArrayList<String>();
 
-            String op;
-            List<String> packages = new ArrayList<String>();
+        JarSearch js = new JarSearch();
 
-            JarSearch js = new JarSearch();
-            if (cmd.hasOption("a") || cmd.hasOption("appinf")) {
-                js.includeAppInf = true;
-            }
+        if (classOpt) {
+            classname = getCleanClassJarName(argument);
+            System.out.println("Searching by class: " + classname);
+            js.setSearchString(classname);
+            String ls = "ls";
+            op = executeCommand(ls);
+            packages = Arrays.asList(op.split("\n"));
 
-            if (cmd.hasOption("c") || cmd.hasOption("class")) {
-                if (cmd.hasOption("c"))
-                    classname = cmd.getOptionValue("c");
-                else
-                    classname = cmd.getOptionValue("class");
-//                cmd.getOptionValue
-                classOpt = true;
-                classname = getCleanClassJarName(classname);
-                System.out.println("Searching by class: " + classname);
-                js.setSearchString(classname);
-                String ls = "ls";
-                op = executeCommand(ls);
-                packages = Arrays.asList(op.split("\n"));
-            } else if (cmd.hasOption("e") || cmd.hasOption("ear")) {
-                if (cmd.hasOption("e")) {
-                    earname = cmd.getOptionValue("e");
-                } else {
-                    earname = cmd.getOptionValue("ear");
-                }
-                earname = getCleanClassJarName(earname);
-                System.out.println("Expanding EAR: " + earname);
-                earOpt = true;
-                String cmd1 = "jar tvf " + earname + ".ear";
-                String earContents = executeCommand(cmd1);
-                packages = Arrays.asList(earContents.split("\n"));
-            } else if (cmd.hasOption("j") || cmd.hasOption("jar")) {
-                if (cmd.hasOption("j")) {
-                    jarname = cmd.getOptionValue("j");
-                } else {
-                    jarname = cmd.getOptionValue("jar");
-                }
-                jarname = getCleanClassJarName(jarname);
-                System.out.println("Searching by JAR: " + jarname);
-                jarOpt = true;
-                js.setSearchString(jarname);
-                js.setIsJarSearch(true);
+        } else if (earOpt) {
+            earname = getCleanClassJarName(argument);
+            System.out.println("Expanding EAR: " + earname);
+            String cmd1 = "jar tvf " + earname + ".ear";
+            String earContents = executeCommand(cmd1);
+            packages = Arrays.asList(earContents.split("\n"));
 
-                String[] lsEar = {
-                        "/bin/sh",
-                        "-c",
-                        "ls *ear"
+        } else if (jarOpt) {
+            jarname = getCleanClassJarName(argument);
+            System.out.println("Searching by JAR: " + jarname);
+            jarOpt = true;
+            js.setSearchString(jarname);
+            js.setIsJarSearch(true);
+
+            String[] lsEar = {
+                    "/bin/sh",
+                    "-c",
+                    "ls *ear"
 //						"ls | grep -i *.ear"
-                };
+            };
 //				String lsEar = "ls *ear";
-                op = executeCommand(lsEar);
-                packages = Arrays.asList(op.split("\n"));
-            }
+            op = executeCommand(lsEar);
+            packages = Arrays.asList(op.split("\n"));
+        }
 
-            if (packages.size() == 0 || packages.get(0).equalsIgnoreCase("")) {
-                System.out.println("ERROR: Could not find package.");
-                System.out.println("ERROR: Invalid search. Package list is empty.\nPlease recheck the folder in which this script is run.");
-                System.exit(0);
-            }
-            js.numPackages = packages.size();
-            System.out.println("Total packages searching: " + packages.size());
+        if (packages.size() == 0 || packages.get(0).equalsIgnoreCase("")) {
+            System.out.println("ERROR! \nCould not find package. \nInvalid search. Package list is empty.\nPlease recheck the folder in which this script is run.");
+            return;
+        }
+        System.out.println("Total packages searching: " + packages.size());
 
-            if (classname.isEmpty() && jarname.isEmpty() && earname.isEmpty()) {
-                System.out.println("ERROR! \nSearch parameters are empty. Cannot perform a null search.");
-                abort();
-            }
+        if (classname.isEmpty() && jarname.isEmpty() && earname.isEmpty()) {
+            System.out.println("ERROR! \nSearch parameters are empty. Cannot perform a null search.");
+            abort();
+        }
 
-            int count = 0;
+        int count = 0;
 
-            System.out.println("Include APP-INF folder jars during ear search? " + js.includeAppInf);
+        if (appinf) {
+            js.includeAppInf = true;
+        }
+        System.out.println("Include APP-INF folder jars during search? " + js.includeAppInf);
 
-            if (classOpt) {
+        if (classOpt) {
 //				System.out.println("Searching packages that contain class: " + classname);
-                for (String p : packages) {
-                    if (p.endsWith("jar") || p.endsWith("sar")) {
-                        p = p.toLowerCase();
-                        js.searchByString(p);
-                        printProgress(++count, js.numPackages);
-                    }
-                }
-                for (String p : packages) {
-                    if (p.endsWith("ear")) {
-                        p = p.toLowerCase();
-                        js.searchByString(p);
-                        printProgress(++count, js.numPackages);
-                    }
-                }
-                System.out.println();
-                js.printSearchResult();
-            } else if (jarOpt) {
-                for (String p : packages) {
-                    if (p.endsWith("ear")) {
-                        p = p.toLowerCase();
-                        js.searchByString(p);
-                        printProgress(++count, js.numPackages);
-                    }
-                }
-                System.out.println();
-                js.printSearchResult();
-            } else if (earOpt) {
-                for (String p : packages) {
+            for (String p : packages) {
+                if (p.endsWith("jar") || p.endsWith("sar")) {
                     p = p.toLowerCase();
-                    js.expandEar(p);
-//					printProgress(++count, js.numPackages);
+                    js.searchByString(p);
+                    printProgress(++count, packages.size());
                 }
-//				System.out.println();
-                js.printEarContents(earname);
             }
+            for (String p : packages) {
+                if (p.endsWith("ear")) {
+                    p = p.toLowerCase();
+                    js.searchByString(p);
+                    printProgress(++count, packages.size());
+                }
+            }
+            System.out.println();
+            js.printSearchResult();
 
+        } else if (jarOpt) {
+            for (String p : packages) {
+                if (p.endsWith("ear")) {
+                    p = p.toLowerCase();
+                    js.searchByString(p);
+                    printProgress(++count, packages.size());
+                }
+            }
+            System.out.println();
+            js.printSearchResult();
+
+        } else if (earOpt) {
+            for (String p : packages) {
+                p = p.toLowerCase();
+                js.expandEar(p);
+//					printProgress(++count, js.numPackages);
+            }
+//				System.out.println();
+            js.printEarContents(earname);
+        }
 
             /*
             StackTraceElement[] callingFrame = Thread.currentThread().getStackTrace();
         logger.info("frenzy TradeInfo setfinal: " + isFinal + " Trade: " + toString() + " Stack trace = \n" + Arrays.toString(callingFrame));
              */
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-//            abort();
-        }
     }
 
     private static void printProgress(int current, int total) {
