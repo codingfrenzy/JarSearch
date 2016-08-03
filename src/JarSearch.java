@@ -14,8 +14,7 @@ public class JarSearch {
     private String earToExpand = "";
     private boolean includeAppInf = false;
 
-    private int execType;
-
+    static final String version = "version: 1.1";
     static String util = "earjarsearch";
     static boolean progressBar = false;
 
@@ -231,7 +230,7 @@ public class JarSearch {
     }
 
     public static void displayVersion() {
-        System.out.println(util + " version: 1.1");
+        System.out.println(util + " " + version);
     }
 
     public static void displayHelp() {
