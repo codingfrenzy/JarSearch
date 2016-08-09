@@ -16,7 +16,7 @@ public class JarSearch {
 
     static private TreeMap<Character, String> options;
     static private Options opt;
-    static final String version = "version: 1.2";
+    static final String version = "version: 1.2.1";
     static String util = "earjarsearch";
     static boolean progressBar = false;
 
@@ -413,7 +413,10 @@ public class JarSearch {
         }
 
         if (packages.size() == 0 || packages.get(0).equalsIgnoreCase("")) {
-            System.out.println("ERROR! \nCould not find package. \nInvalid search. Package list is empty.\nPlease recheck the folder in which this script is run.");
+            System.out.println("ERROR! \nCould not find any package.\nPlease recheck the folder in which this script is run.");
+            if (earOpt) {
+                System.out.println("For ear expansion, please specify complete ear name.");
+            }
             return;
         }
 
