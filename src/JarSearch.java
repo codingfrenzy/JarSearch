@@ -1,4 +1,4 @@
-//import org.apache.commons.cli.*;
+import org.apache.commons.cli.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,7 +14,9 @@ public class JarSearch {
     private String earToExpand = "";
     private boolean includeAppInf = false;
 
-    static final String version = "version: 1.1";
+    static private TreeMap<Character, String> options;
+    static private Options opt;
+    static final String version = "version: 1.2";
     static String util = "earjarsearch";
     static boolean progressBar = false;
 
@@ -234,15 +236,26 @@ public class JarSearch {
     }
 
     public static void displayHelp() {
-        System.out.println("\nUtility to perform (case insensitive) search for within packages.\n");
+        System.out.println("\nUtility to perform (case insensitive) search within packages.\n");
         displayVersion();
         System.out.println("\nExample usages:\n" +
-                util + " -c oms \t\tDisplays all jars with any class with 'oms' in its class name. Also displays ears that have above jars.\n\n" +
-                util + " -ac oms \t\tDisplays all jars with any class with 'oms' in its class name. Includes APP-INF jars.\n\n" +
-                util + " -j umsservice \tDisplays all ears that contains any jar with 'omsservice' in its name.\n\n" +
-                util + " -aj umsservice \tDisplays all ears that contains any jar with 'omsservice' in its name. Includes APP-INF jars.\n\n" +
-                util + " -e umsservice.ear => Displays all jars+classes in given ear.\n"
+                util + " -c oms \t\t\tDisplays all jars with any class with 'oms' in its class name. Also displays ears that have above jars.\n" +
+                util + " -ac oms \t\t\tDisplays all jars with any class with 'oms' in its class name. Includes APP-INF jars.\n" +
+                util + " -j omsservice \t\tDisplays all ears that contains any jar with 'omsservice' in its name.\n" +
+                util + " -aj omsservice \t\tDisplays all ears that contains any jar with 'omsservice' in its name. Includes APP-INF jars.\n" +
+                util + " -e umsservice.ear \t\tDisplays all jars+classes in given ear.\n" +
+                util + " -ea umsservice.ear \tDisplays all jars+classes in given ear. Includes APP-INF jars.\n"
         );
+
+//        System.out.println("\nOptions:\n");
+//        for (Character c : options.keySet()){
+//            String s = options.get(c);
+//            System.out.println(C + " \t");
+//        }
+
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("Options: \n", opt);
+
     }
 
     public static void abort() {
@@ -266,7 +279,7 @@ public class JarSearch {
 
     public static void main(String[] args) {
 
-        TreeMap<Character, String> options = new TreeMap<Character, String>();
+        options = new TreeMap<Character, String>();
         options.put('a', "(appinf) when searching, includes jars in APP-INF folder");
         options.put('c', "(class) the class name to search for in the packages");
         options.put('e', "(ear) Expand an ear and show the jars + classes.");
@@ -275,6 +288,14 @@ public class JarSearch {
         options.put('p', "(progress) displays the progress bar");
         options.put('v', "(version) displays the version number");
 
+        opt = new Options();
+        opt.addOption("a", false, options.get('a'));
+        opt.addOption("c", true, options.get('c'));
+        opt.addOption("e", true, options.get('e'));
+        opt.addOption("h", false, options.get('h'));
+        opt.addOption("j", true, options.get('j'));
+        opt.addOption("p", false, options.get('p'));
+        opt.addOption("v", false, options.get('v'));
         /*
         c
         j
@@ -395,7 +416,10 @@ public class JarSearch {
             System.out.println("ERROR! \nCould not find package. \nInvalid search. Package list is empty.\nPlease recheck the folder in which this script is run.");
             return;
         }
-        System.out.println("Total packages searching: " + packages.size());
+
+        if (!earOpt) {
+            System.out.println("Total packages searching: " + packages.size());
+        }
 
         if (classname.isEmpty() && jarname.isEmpty() && earname.isEmpty()) {
             System.out.println("ERROR! \nSearch parameters are empty. Cannot perform a null search.");
