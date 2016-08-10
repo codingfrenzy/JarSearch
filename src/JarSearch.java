@@ -16,7 +16,7 @@ public class JarSearch {
 
     static private TreeMap<Character, String> options;
     static private Options opt;
-    static final String version = "version: 1.2.1";
+    static final String version = "version: 1.3";
     static String util = "earjarsearch";
     static boolean progressBar = false;
 
@@ -126,11 +126,13 @@ public class JarSearch {
             if (packageContent == null || packageContent.equalsIgnoreCase("")) {
                 continue;
             }
-            if ((packageName.endsWith("jar") || packageName.endsWith("sar")) && packageContent.toLowerCase().indexOf(searchString) != -1) {
+            String[] str1 = packageContent.split("/");
+            String str = str1[str1.length - 1];
+            if ((packageName.endsWith("jar") || packageName.endsWith("sar")) && str.toLowerCase().indexOf(searchString) != -1) {
                 updateHash(packageMap, packageName, packageContent);
                 jarFoundList.add(packageName.toLowerCase());
             }
-            boolean jarSearch = isJarSearch && packageContent.toLowerCase().indexOf(searchString) != -1;
+            boolean jarSearch = isJarSearch && str.toLowerCase().indexOf(searchString) != -1;
             if (packageName.endsWith("ear") && (jarFoundListHelper(packageContent) || jarSearch)) {
                 updateHash(packageMap, packageName, packageContent);
             }
